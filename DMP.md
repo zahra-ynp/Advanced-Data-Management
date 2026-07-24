@@ -92,17 +92,27 @@ Raw data and all scripts will be retained for the duration of the academic progr
 
 ## Appendix: Core API Query Parameters
 
-To ensure full reproducibility of the macroeconomic data extraction, the following specific parameters are utilized in the ingestion scripts:
+---
 
-**Global Date Range:** `2007-01-01` to `2023-12-31`
+## Appendix: API Query Parameters & Ingestion Standards
 
-**FRED (US) Series IDs:**
-*   `CPIAUCSL`: Consumer Price Index (Inflation)
-*   `UNRATE`: Unemployment Rate (%)
-*   `FEDFUNDS`: Federal Funds Rate (%)
-*   `INDPRO`: Industrial Production Index
+To ensure full reproducibility of the macroeconomic data extraction, the ingestion scripts utilize the following parameters, endpoints, and credential management standards:
+
+### 1. Authentication & Security
+* **Credential Management:** API keys are never stored in source code or metadata. Ingestion scripts load credentials securely from local environment variables (`.env`).
+* **Access Requirements:** FRED requires a free user API key (registered via St. Louis Fed). Eurostat API endpoints used in this pipeline are publicly accessible without authentication.
+
+### 2. FRED (US Macroeconomic Data)
+* **Global Date Range:** `2007-01-01` to `2023-12-31`
+* **Series IDs:** `CPIAUCSL` (CPI Inflation), `UNRATE` (Unemployment Rate), `FEDFUNDS` (Federal Funds Rate), `INDPRO` (Industrial Production Index)
+* **Sample API Request:**
+  ```text
+  [https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&file_type=json&api_key=YOUR_API_KEY](https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&file_type=json&api_key=YOUR_API_KEY)```
 
 **Eurostat (EU) Parameters:**
 *   **Dataset Code:** `prc_hicp_midx` (Harmonised Index of Consumer Prices)
 *   **Format:** `JSON`
 *   **Geography Filter:** `IT` (Italy) and `EA` (Euro Area)
+*   **Sample API Request:**
+  ```text
+   [https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/prc_hicp_midx/1.0?format=JSON](https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/prc_hicp_midx/1.0?format=JSON)```
