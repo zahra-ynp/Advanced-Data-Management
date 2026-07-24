@@ -87,3 +87,22 @@ Raw source files in `data/raw/` are treated as immutable. They are never modifie
 
 **Retention:**  
 Raw data and all scripts will be retained for the duration of the academic program and at least 12 months after project submission, consistent with university research data policies.
+
+---
+
+## Appendix: Core API Query Parameters
+
+To ensure full reproducibility of the macroeconomic data extraction, the following specific parameters are utilized in the ingestion scripts:
+
+**Global Date Range:** `2007-01-01` to `2023-12-31`
+
+**FRED (US) Series IDs:**
+*   `CPIAUCSL`: Consumer Price Index (Inflation)
+*   `UNRATE`: Unemployment Rate (%)
+*   `FEDFUNDS`: Federal Funds Rate (%)
+*   `INDPRO`: Industrial Production Index
+
+**Eurostat (EU) Parameters:**
+*   **Dataset Code:** `prc_hicp_midx` (Harmonised Index of Consumer Prices)
+*   **Format:** `JSON`
+*   **Geography Filter:** `IT` (Italy) and `EA` (Euro Area)
