@@ -12,6 +12,7 @@
     "name": "University of Trieste - Data Science and Artificial Intelligence"
   },
   "dateCreated": "2026-07-18",
+  "dateModified": "2026-07-24",
   "version": "1.0",
   "isAccessibleForFree": true,
   "license": "https://creativecommons.org/licenses/by-nc/4.0/",
@@ -37,11 +38,26 @@
     "Eurostat"
   ],
   "variableMeasured": [
-    "Consumer Price Index (CPI)",
-    "Industrial Production Index",
-    "Unemployment Rate",
-    "Federal Funds Rate",
-    "FinBERT Sentiment Score"
+    {
+      "@type": "PropertyValue",
+      "name": "Consumer Price Index (CPI)"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Industrial Production Index"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Unemployment Rate"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Federal Funds Rate"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "FinBERT Sentiment Score"
+    }
   ],
   "distribution": [
     {
