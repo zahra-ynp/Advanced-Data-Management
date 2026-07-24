@@ -37,8 +37,6 @@ Data is managed across two storage layers following an ELT (Extract, Load, Trans
 | **Raw Staging Store** | Raw macroeconomic time-series ingested from FRED & Eurostat APIs | Relational / JSON staging tables | PostgreSQL (`staging` schema) |
 | **Analytical Store** | Cleaned indicators, derived FinBERT sentiment scores, merged features & views | Relational tables & SQL views | PostgreSQL (`core` schema) |
 
-**Directory and Database Schema Architecture:**
-
 **Directory structure:**
 ```
 Advanced-Data-Management/
