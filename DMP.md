@@ -92,10 +92,6 @@ Raw data and all scripts will be retained for the duration of the academic progr
 
 ## Appendix: Core API Query Parameters
 
----
-
-## Appendix: API Query Parameters & Ingestion Standards
-
 To ensure full reproducibility of the macroeconomic data extraction, the ingestion scripts utilize the following parameters, endpoints, and credential management standards:
 
 ### 1. Authentication & Security
