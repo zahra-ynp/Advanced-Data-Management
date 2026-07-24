@@ -7,7 +7,7 @@
 
 ---
 
-## 1. What Data Are You Collecting?
+## 1. What Data Are We Collecting?
 
 This project combines two categories of data:
 
