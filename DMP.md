@@ -29,12 +29,15 @@ From the unstructured text, a **FinBERT Sentiment Score** (a float between −1 
 
 ## 2. Where Will It Be Stored?
 
-Data is managed across two storage layers following a raw-vs-processed separation principle:
+Data is managed across two storage layers following an ELT (Extract, Load, Transform) architecture, strictly separating heavy unstructured text from lightweight structured metrics:
 
-| Layer | Contents | Format | Location |
+| Layer | Contents | Format / Storage | Location |
 |---|---|---|---|
-| **Raw Data Lake** | Original API responses, CSV/Parquet news files | JSON, CSV, Parquet | `data/raw/` (on disk) |
-| **Analytical Store** | Cleaned indicators, sentiment scores, joined features | PostgreSQL tables & views | Local PostgreSQL instance |
+| **Raw Text Data Lake** | Original news CSV & Parquet files (heavy unstructured text) | CSV, Parquet files | `data/raw/news/` (on disk) |
+| **Raw Staging Store** | Raw macroeconomic time-series ingested from FRED & Eurostat APIs | Relational / JSON staging tables | PostgreSQL (`staging` schema) |
+| **Analytical Store** | Cleaned indicators, derived FinBERT sentiment scores, merged features & views | Relational tables & SQL views | PostgreSQL (`core` schema) |
+
+**Directory and Database Schema Architecture:**
 
 **Directory structure:**
 ```
