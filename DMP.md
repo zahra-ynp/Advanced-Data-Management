@@ -1,11 +1,9 @@
 ﻿# Data Management Plan (DMP)
 **Project:** Macroeconomic Sentiment and Inflation Database  
 **Author:** Zahra Younes Pour Langaroudi  
-**Institution:** University of Trieste — Data Science and Artificial Intelligence
-
-**Date:** 2026-07-19
-
-**Version:** 1.0
+**Institution:** University of Trieste — Data Science and Artificial Intelligence  
+**Date:** 2026-07-19  
+**Version:** 1.0  
 
 ---
 
