@@ -2,7 +2,7 @@
 **Project:** Macroeconomic Sentiment and Inflation Database  
 **Author:** Zahra Younes Pour Langaroudi  
 **Institution:** University of Trieste — Data Science and Artificial Intelligence  
-**Date:** 2026-07-19  
+**Date:** 2026-07-19 
 **Version:** 2.0
 
 ---
@@ -31,10 +31,26 @@ Data flows through four layers, from ingestion to analysis:
 
 | Layer | Contents | Format | Location |
 |---|---|---|---|
-| **Raw** | news CSV/Parquet files | CSV, Parquet | `data/raw/` (on disk) |
+| **Raw** | Original API responses (JSON), news CSV/Parquet files | JSON, CSV, Parquet | `data/raw/` (on disk) |
 | **Staging** | Macroeconomic indicators loaded from FRED and Eurostat | PostgreSQL tables | Local PostgreSQL instance |
 | **Core** | Normalized indicators and FinBERT news sentiment scores | PostgreSQL tables | Local PostgreSQL instance |
 | **Analytics** | Monthly aggregated sentiment joined with indicators; MOM inflation derived metrics | PostgreSQL views | Local PostgreSQL instance |
+
+**Directory structure:**
+```
+Advanced-Data-Management/
+├── data/
+│   ├── raw/          ← original, never modified
+│   │   ├── fred/
+│   │   ├── eurostat/
+│   │   └── news/
+│   └── processed/    ← derived outputs (re-computable)
+├── metadata/
+│   └── dataset_metadata.jsonld
+├── scripts/
+├── DMP.md
+└── README.md
+```
 
 Raw files are **never overwritten**. All transformations are scripted and reproducible — staging and core tables are populated from raw files, and analytics are defined as PostgreSQL views recomputed on demand.
 
@@ -71,8 +87,31 @@ Raw source files in `data/raw/` are treated as immutable. They are never modifie
 - PostgreSQL views (not materialized tables where possible) are used for derived metrics, ensuring they stay consistent with the underlying data without duplication.
 - API query parameters (date ranges, series IDs) are documented in `scripts/` comments and this DMP.
 
-**Versioning and Backup:**  
-The full project is version-controlled via **Git** and hosted at https://github.com/zahra-ynp/Advanced-Data-Management — serving as both the version history and the primary backup. The dataset version is tracked in `metadata/dataset_metadata.jsonld` (`"version": "2.0"`). Raw source data, should it need to be re-acquired, can be re-downloaded from the original providers using the ingestion scripts.
-
 **Retention:**  
 Raw data and all scripts will be retained for the duration of the academic program and at least 12 months after project submission, consistent with university research data policies.
+
+---
+
+## Appendix: Core API Query Parameters
+
+To ensure full reproducibility of the macroeconomic data extraction, the ingestion scripts utilize the following parameters, endpoints, and credential management standards:
+
+### 1. Authentication & Security
+* **Credential Management:** API keys are never stored in source code or metadata. Ingestion scripts load credentials securely from local environment variables (`.env`).
+* **Access Requirements:** FRED requires a free user API key (registered via St. Louis Fed). Eurostat API endpoints used in this pipeline are publicly accessible without authentication.
+
+### 2. FRED (US Macroeconomic Data)
+* **Global Date Range:** `2007-01-01` to `2023-12-31`
+* **Series IDs:** `CPIAUCSL` (CPI Inflation), `UNRATE` (Unemployment Rate), `FEDFUNDS` (Federal Funds Rate), `INDPRO` (Industrial Production Index)
+* **Sample API Request:**
+  ```text
+  https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&file_type=json&api_key=YOUR_API_KEY
+  
+**Eurostat (EU) Parameters:**
+*   **Dataset Code:** `prc_hicp_midx` (Harmonised Index of Consumer Prices)
+*   **Format:** `JSON`
+*   **Geography Filter:** `IT` (Italy) and `EA` (Euro Area)
+*   **Sample API Request:**
+  ```text
+  https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/prc_hicp_midx/1.0?format=JSON
+
