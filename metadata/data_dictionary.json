@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Macroeconomic Sentiment and Inflation Database — Data Dictionary",
+  "description": "Structural and descriptive metadata for all database objects (tables, views) and file-based datasets used in the project. Each entry documents column names, SQL/file data types, constraints, business meaning, and example values.",
+  "version": "1.0",
+  "lastUpdated": "2026-07-26",
+  "author": "Zahra Younes Pour Langaroudi",
+  "databaseName": "MacroSentimentDB",
+  "databaseEngine": "Microsoft SQL Server",
+  "schemas": [
+    {
+      "schemaName": "core",
+      "description": "Core schema holding normalized, cleaned data loaded from the ETL pipeline. Tables in this schema are the single source of truth for all downstream analytics."
+    },
+    {
+      "schemaName": "analytics",
+      "description": "Analytics schema containing derived views that aggregate and join core tables for ML feature extraction and exploratory analysis."
+    }
+  ],
+  "tables": [
+    {
+      "objectType": "TABLE",
+      "schema": "core",
+      "name": "core_daily_news",
+      "description": "Stores one row per financial news article with its FinBERT-derived sentiment score and label. Granularity: one article per row. Populated from the processed FinBERT output file via the ETL notebook.",
+      "recordGranularity": "One row per news article per day",
+      "primaryKey": "article_id",
+      "foreignKeys": [],
+      "approximateRowCount": "~15,000",
+      "temporalRange": "2007-01-01 to 2023-12-31",
+      "columns": [
+        {
+          "name": "article_id",
+          "sqlType": "INT IDENTITY(1,1)",
+          "nullable": false,
+          "isPrimaryKey": true,
+          "description": "Auto-incrementing surrogate primary key uniquely identifying each news article.",
+          "example": 1
+        },
+        {
+          "name": "news_date",
+          "sqlType": "DATE",
+          "nullable": false,
+          "isPrimaryKey": false,
+          "description": "Publication date of the news article, normalized to YYYY-MM-DD format.",
+          "example": "2007-06-04"
+        },
+        {
+          "name": "title",
+          "sqlType": "VARCHAR(500)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Headline or title text of the news article. Used as the input to the FinBERT sentiment model.",
+          "example": "Blackstone boosts IPO after Beijing takes $3bn stake"
+        },
+        {
+          "name": "source_name",
+          "sqlType": "VARCHAR(100)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Name of the originating news source (e.g., 'kaggle', 'HuggingFace').",
+          "example": "kaggle"
+        },
+        {
+          "name": "source_region",
+          "sqlType": "VARCHAR(50)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Geographic region tag assigned to the article. Used for joining sentiment with the corresponding macroeconomic agency. Values: 'US' or 'Global'.",
+          "valueDomain": [
+            "US",
+            "Global"
+          ],
+          "example": "US"
+        },
+        {
+          "name": "sentiment_score",
+          "sqlType": "FLOAT",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "FinBERT-derived sentiment score for the article title. Range: -1.0 (most negative) to +1.0 (most positive). Computed as: P(positive) - P(negative) from the FinBERT softmax output.",
+          "valueRange": {
+            "min": -1.0,
+            "max": 1.0
+          },
+          "example": 0.896
+        },
+        {
+          "name": "sentiment_label",
+          "sqlType": "VARCHAR(50)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Categorical sentiment classification derived from the highest-probability FinBERT class.",
+          "valueDomain": [
+            "positive",
+            "negative",
+            "neutral"
+          ],
+          "example": "positive"
+        },
+        {
+          "name": "lake_pointer_url",
+          "sqlType": "VARCHAR(500)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "URL or file path pointing back to the original raw data source in the data lake. Provides traceability from the database record to its raw origin.",
+          "example": "data/raw/news/FinSen_US_Categorized_Timestamp.csv"
+        }
+      ]
+    },
+    {
+      "objectType": "TABLE",
+      "schema": "core",
+      "name": "core_macro_indicators_monthly",
+      "description": "Stores monthly macroeconomic indicator values sourced from FRED (US) and Eurostat (EU). Each row represents one month's readings from one source agency. A composite alternate key on (month_date, source_agency) prevents duplicate entries.",
+      "recordGranularity": "One row per source agency per calendar month",
+      "primaryKey": "record_id",
+      "alternateKey": [
+        "month_date",
+        "source_agency"
+      ],
+      "foreignKeys": [],
+      "approximateRowCount": "~200",
+      "temporalRange": "2007-01-01 to 2023-12-31",
+      "columns": [
+        {
+          "name": "record_id",
+          "sqlType": "INT IDENTITY(1,1)",
+          "nullable": false,
+          "isPrimaryKey": true,
+          "description": "Auto-incrementing surrogate primary key.",
+          "example": 1
+        },
+        {
+          "name": "month_date",
+          "sqlType": "DATE",
+          "nullable": false,
+          "isPrimaryKey": false,
+          "isAlternateKey": true,
+          "description": "First day of the calendar month this record represents (e.g., 2007-01-01 for January 2007).",
+          "example": "2007-01-01"
+        },
+        {
+          "name": "source_agency",
+          "sqlType": "VARCHAR(100)",
+          "nullable": false,
+          "isPrimaryKey": false,
+          "isAlternateKey": true,
+          "description": "The data provider agency. Used in join logic with news sentiment region mapping.",
+          "valueDomain": [
+            "FRED",
+            "Eurostat"
+          ],
+          "example": "FRED"
+        },
+        {
+          "name": "country",
+          "sqlType": "VARCHAR(100)",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Country or economic area the indicators belong to.",
+          "valueDomain": [
+            "US",
+            "Italy",
+            "Euro Area"
+          ],
+          "example": "US"
+        },
+        {
+          "name": "cpi_value",
+          "sqlType": "FLOAT",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Consumer Price Index value for the given month. For FRED this is the CPIAUCSL series (All Urban Consumers, seasonally adjusted). For Eurostat this is the HICP (prc_hicp_midx).",
+          "example": 202.416
+        },
+        {
+          "name": "unemployment_rate",
+          "sqlType": "FLOAT",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Monthly unemployment rate as a percentage. FRED series: UNRATE.",
+          "example": 4.6
+        },
+        {
+          "name": "fed_funds_rate",
+          "sqlType": "FLOAT",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Effective Federal Funds Rate (monthly average). FRED series: FEDFUNDS. NULL for non-US agencies.",
+          "example": 5.25
+        },
+        {
+          "name": "ind_production_value",
+          "sqlType": "FLOAT",
+          "nullable": true,
+          "isPrimaryKey": false,
+          "description": "Industrial Production Index value. FRED series: INDPRO (seasonally adjusted, 2017=100 base).",
+          "example": 100.7
+        }
+      ]
+    },
+    {
+      "objectType": "VIEW",
+      "schema": "analytics",
+      "name": "Analytics_Monthly_View",
+      "description": "Aggregated analytical view joining monthly sentiment averages with macroeconomic indicators. Includes Month-over-Month (MoM) derived calculations for CPI and Industrial Production using SQL window functions (LAG). Designed for ML feature extraction and time-series analysis.",
+      "recordGranularity": "One row per source agency per calendar month",
+      "baseTables": [
+        "core.core_daily_news",
+        "core.core_macro_indicators_monthly"
+      ],
+      "joinLogic": "Sentiment source_region is mapped to indicator source_agency: US→FRED, Global→Eurostat",
+      "columns": [
+        {
+          "name": "month_date",
+          "sqlType": "DATE",
+          "description": "First day of the analysis month, derived from snapping news_date to the 1st of each month.",
+          "source": "Derived from core.core_daily_news.news_date via DATEFROMPARTS()"
+        },
+        {
+          "name": "source_agency",
+          "sqlType": "VARCHAR(100)",
+          "description": "The macroeconomic data provider (FRED or Eurostat).",
+          "source": "core.core_macro_indicators_monthly.source_agency"
+        },
+        {
+          "name": "country",
+          "sqlType": "VARCHAR(100)",
+          "description": "Country or economic area.",
+          "source": "core.core_macro_indicators_monthly.country"
+        },
+        {
+          "name": "avg_monthly_sentiment",
+          "sqlType": "FLOAT",
+          "description": "Average FinBERT sentiment score across all articles published in the given month and region. Computed via AVG() aggregation on daily article scores.",
+          "source": "Aggregated from core.core_daily_news.sentiment_score"
+        },
+        {
+          "name": "cpi_value",
+          "sqlType": "FLOAT",
+          "description": "Consumer Price Index for the month.",
+          "source": "core.core_macro_indicators_monthly.cpi_value"
+        },
+        {
+          "name": "unemployment_rate",
+          "sqlType": "FLOAT",
+          "description": "Monthly unemployment rate.",
+          "source": "core.core_macro_indicators_monthly.unemployment_rate"
+        },
+        {
+          "name": "fed_funds_rate",
+          "sqlType": "FLOAT",
+          "description": "Federal Funds Rate for the month.",
+          "source": "core.core_macro_indicators_monthly.fed_funds_rate"
+        },
+        {
+          "name": "ind_production_value",
+          "sqlType": "FLOAT",
+          "description": "Industrial Production Index for the month.",
+          "source": "core.core_macro_indicators_monthly.ind_production_value"
+        },
+        {
+          "name": "cpi_mom",
+          "sqlType": "FLOAT",
+          "description": "Month-over-Month change in CPI, calculated as current month CPI minus the previous month's CPI using the LAG() window function, partitioned by source_agency.",
+          "source": "Derived via LAG(cpi_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)"
+        },
+        {
+          "name": "ind_production_mom",
+          "sqlType": "FLOAT",
+          "description": "Month-over-Month change in Industrial Production Index, calculated as current minus previous month using the LAG() window function, partitioned by source_agency.",
+          "source": "Derived via LAG(ind_production_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)"
+        }
+      ]
+    }
+  ],
+  "fileDatasets": [
+    {
+      "layer": "raw",
+      "name": "FinSen_US_Categorized_Timestamp.csv",
+      "path": "data/raw/news/FinSen_US_Categorized_Timestamp.csv",
+      "format": "CSV",
+      "encoding": "UTF-8",
+      "description": "Raw financial news dataset from the Kaggle FinSen collection. Contains US-focused financial headlines with timestamps and topic tags. This file is treated as immutable after initial download.",
+      "source": "Kaggle — FinSen Financial Sentiment Dataset",
+      "sourceUrl": "https://www.kaggle.com/datasets/eaglewhl/finsen-financial-sentiment-dataset",
+      "columns": [
+        {
+          "name": "article_id",
+          "dataType": "INTEGER",
+          "description": "Unique identifier for each article, assigned during data preparation."
+        },
+        {
+          "name": "Title",
+          "dataType": "STRING",
+          "description": "Headline or title of the financial news article."
+        },
+        {
+          "name": "Tag",
+          "dataType": "STRING",
+          "description": "Topic category tag (e.g., 'News', 'Balance of Trade', 'GDP', 'Inflation Rate')."
+        },
+        {
+          "name": "Time",
+          "dataType": "STRING (D/MM/YYYY)",
+          "description": "Publication date in day/month/year format. Parsed and normalized to DATE during ETL."
+        },
+        {
+          "name": "Content",
+          "dataType": "STRING",
+          "description": "Full article text content including the headline, country tag, topic, body text, and ISO timestamp."
+        }
+      ]
+    },
+    {
+      "layer": "processed",
+      "name": "finbert_article_scores.csv",
+      "path": "data/processed/finbert_article_scores.csv",
+      "format": "CSV",
+      "encoding": "UTF-8",
+      "description": "Pre-computed FinBERT sentiment scores for each news article. Generated by running the FinBERT transformer model on article titles. This file serves as a checkpoint to avoid re-running expensive GPU inference.",
+      "columns": [
+        {
+          "name": "article_id",
+          "dataType": "INTEGER",
+          "description": "Foreign reference to the raw article. Matches the article_id in the raw news file."
+        },
+        {
+          "name": "Date",
+          "dataType": "STRING (YYYY-MM-DD)",
+          "description": "Publication date, normalized to ISO 8601 format."
+        },
+        {
+          "name": "Title",
+          "dataType": "STRING",
+          "description": "Article headline text that was scored by FinBERT."
+        },
+        {
+          "name": "Sentiment_Score",
+          "dataType": "FLOAT",
+          "description": "FinBERT sentiment score. Range: -1.0 to +1.0. Calculated as P(positive) - P(negative)."
+        },
+        {
+          "name": "Label",
+          "dataType": "STRING",
+          "description": "Categorical sentiment label: 'positive', 'negative', or 'neutral'."
+        }
+      ]
+    }
+  ]
+}
