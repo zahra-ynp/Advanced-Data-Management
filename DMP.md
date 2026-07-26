@@ -56,7 +56,12 @@ All scripts, metadata, and processed outputs are available under **CC BY-NC 4.0*
 ## 4. How Will It Be Preserved?
 
 **Documentation:**  
-All datasets are described in `metadata/dataset_metadata.jsonld` — a structured JSON-LD file following the schema.org vocabulary, covering title, creator, license, temporal coverage, source URLs, format, and version. This DMP serves as the complementary human-readable documentation.
+All datasets are described by three complementary metadata files in the `metadata/` directory:
+- `dataset_metadata.jsonld` — Structured JSON-LD following Schema.org vocabulary, covering title, creator, license, temporal/spatial coverage, source URLs, format, and version (descriptive metadata).
+- `data_dictionary.json` — Column-level data dictionary documenting every database table, view, and file dataset with SQL types, constraints, business definitions, value domains, and examples (structural metadata).
+- `data_lineage.jsonld` — Provenance metadata using W3C PROV-O ontology, documenting the complete data flow from external sources through FinBERT processing to the final analytics layer (administrative/provenance metadata).
+
+This DMP serves as the complementary human-readable documentation.
 
 **Separation of raw and derived data:**  
 Raw source files in `data/raw/` are treated as immutable. They are never modified after ingestion. All analytical outputs in `data/processed/` and SQL Server are fully re-computable from the raw files using the scripts in `scripts/`.

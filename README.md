@@ -86,6 +86,8 @@ Open `scripts/data_prep.ipynb` and run the cells sequentially to fetch FRED macr
 
 - **`DMP.md`**: Detailed Data Management Plan covering data collection, storage layers, copyright, preservation, and API query parameters.
 - **`metadata/dataset_metadata.jsonld`**: Structured JSON-LD metadata complying with Schema.org standards for open research data.
+- **`metadata/data_dictionary.json`**: Comprehensive data dictionary documenting every database table, view, and file dataset with column-level definitions, data types, constraints, value domains, and business meaning.
+- **`metadata/data_lineage.jsonld`**: Provenance and lineage metadata using W3C PROV-O ontology, documenting the complete data flow from external sources through transformation stages to the final analytics layer.
 
 ---
 
