@@ -90,12 +90,13 @@ To ensure full reproducibility of the macroeconomic data extraction, the ingesti
 * **Sample API Request:**
   ```text
   https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&file_type=json&api_key=YOUR_API_KEY
-  
-**Eurostat (EU) Parameters:**
-*   **Dataset Code:** `prc_hicp_midx` (Harmonised Index of Consumer Prices)
-*   **Format:** `JSON`
-*   **Geography Filter:** `IT` (Italy) and `EA` (Euro Area)
-*   **Sample API Request:**
+  ```
+
+### 3. Eurostat (EU Macroeconomic Data)
+* **Dataset Code:** `prc_hicp_midx` (Harmonised Index of Consumer Prices)
+* **Format:** `JSON`
+* **Geography Filter:** `IT` (Italy) and `EA` (Euro Area)
+* **Sample API Request:**
   ```text
   https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/prc_hicp_midx/1.0?format=JSON
-
+  ```
