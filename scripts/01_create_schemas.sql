@@ -1,0 +1,8 @@
+CREATE SCHEMA staging;
+GO
+
+CREATE SCHEMA core;
+GO
+
+CREATE SCHEMA analytics;
+GO
