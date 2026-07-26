@@ -1,0 +1,11 @@
+pandas
+numpy
+matplotlib
+sqlalchemy
+pyodbc
+fredapi
+transformers
+torch
+tqdm
+python-dotenv
+jupyter
