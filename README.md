@@ -29,6 +29,10 @@ The pipeline follows a multi-tier data management architecture:
    - `core_daily_news`: FinBERT-scored news articles (date, title, source, sentiment score, sentiment label).
 4. **Analytics Database Schema (`analytics`)**: Houses dynamic SQL views (`Analytics_Monthly_View`) that aggregate daily news sentiment to monthly levels, map regional sentiment to corresponding economic agencies, and compute Month-over-Month (MoM) economic changes.
 
+### Database Schema (ER Diagram)
+
+![ER Diagram](docs/ER.png)
+
 ---
 
 ##  Prerequisites & Environment Setup
@@ -45,7 +49,7 @@ The pipeline follows a multi-tier data management architecture:
 Install the required Python packages using `pip`:
 
 ```bash
-pip install pandas numpy matplotlib sqlalchemy pyodbc fredapi transformers torch tqdm python-dotenv jupyter
+pip install -r requirements.txt
 ```
 
 ---
