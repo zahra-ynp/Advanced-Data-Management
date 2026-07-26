@@ -1,0 +1,363 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@type": "prov:Bundle",
+  "schema:name": "Macroeconomic Sentiment and Inflation Database — Data Lineage",
+  "schema:description": "Provenance and lineage metadata documenting the complete data flow from external sources through transformation stages to the final analytical views in the MacroSentimentDB database.",
+  "schema:version": "1.0",
+  "schema:dateCreated": "2026-07-26",
+  "schema:creator": {
+    "@type": "schema:Person",
+    "schema:name": "Zahra Younes Pour Langaroudi"
+  },
+  "dataSources": [
+    {
+      "@id": "source:kaggle-finsen",
+      "@type": "prov:Entity",
+      "schema:name": "Kaggle FinSen Financial Sentiment Dataset",
+      "schema:description": "Raw CSV dataset of US financial news headlines with timestamps and topic tags (2007–2023).",
+      "schema:url": "https://www.kaggle.com/datasets/eaglewhl/finsen-financial-sentiment-dataset",
+      "dcat:mediaType": "text/csv",
+      "schema:license": "Kaggle Open Dataset Terms",
+      "schema:temporalCoverage": "2007-01-01/2023-12-31",
+      "schema:spatialCoverage": "United States",
+      "prov:wasAttributedTo": "Kaggle user: eaglewhl"
+    },
+    {
+      "@id": "source:huggingface-multisource",
+      "@type": "prov:Entity",
+      "schema:name": "HuggingFace Financial News Multisource",
+      "schema:description": "Large multi-source financial news corpus in Apache Parquet format.",
+      "schema:url": "https://huggingface.co/datasets/Brianferrell787/financial-news-multisource",
+      "dcat:mediaType": "application/vnd.apache.parquet",
+      "schema:license": "HuggingFace Dataset Terms",
+      "prov:wasAttributedTo": "HuggingFace user: Brianferrell787"
+    },
+    {
+      "@id": "source:fred-api",
+      "@type": "prov:Entity",
+      "schema:name": "FRED (Federal Reserve Economic Data) API",
+      "schema:description": "REST API providing US macroeconomic time-series: CPI (CPIAUCSL), Unemployment Rate (UNRATE), Federal Funds Rate (FEDFUNDS), Industrial Production Index (INDPRO).",
+      "schema:url": "https://api.stlouisfed.org/fred/series/observations",
+      "dcat:mediaType": "application/json",
+      "schema:license": "Public Domain (U.S. Government)",
+      "schema:temporalCoverage": "2007-01-01/2023-12-31",
+      "schema:spatialCoverage": "United States",
+      "prov:wasAttributedTo": "Federal Reserve Bank of St. Louis"
+    },
+    {
+      "@id": "source:eurostat-api",
+      "@type": "prov:Entity",
+      "schema:name": "Eurostat SDMX API",
+      "schema:description": "SDMX-compliant API providing European macroeconomic indicators including HICP (Harmonised Index of Consumer Prices, dataset prc_hicp_midx).",
+      "schema:url": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/",
+      "dcat:mediaType": "application/json",
+      "schema:license": "CC BY 4.0",
+      "schema:temporalCoverage": "2007-01-01/2023-12-31",
+      "schema:spatialCoverage": "European Union (Euro Area)",
+      "prov:wasAttributedTo": "European Commission — Eurostat"
+    },
+    {
+      "@id": "source:finbert-model",
+      "@type": "prov:SoftwareAgent",
+      "schema:name": "FinBERT Sentiment Analysis Model",
+      "schema:description": "Pre-trained Transformer model fine-tuned for financial text sentiment classification (positive, negative, neutral). Used from the HuggingFace transformers library.",
+      "schema:url": "https://huggingface.co/ProsusAI/finbert",
+      "schema:softwareVersion": "HuggingFace Transformers"
+    }
+  ],
+  "intermediateArtifacts": [
+    {
+      "@id": "artifact:raw-news-csv",
+      "@type": "prov:Entity",
+      "schema:name": "FinSen_US_Categorized_Timestamp.csv",
+      "schema:description": "Immutable raw news file stored in data/raw/news/. Contains article_id, Title, Tag, Time, and Content columns.",
+      "filePath": "data/raw/news/FinSen_US_Categorized_Timestamp.csv",
+      "dcat:mediaType": "text/csv",
+      "prov:wasDerivedFrom": {
+        "@id": "source:kaggle-finsen"
+      },
+      "prov:wasGeneratedBy": {
+        "@id": "activity:data-download"
+      }
+    },
+    {
+      "@id": "artifact:finbert-scores-csv",
+      "@type": "prov:Entity",
+      "schema:name": "finbert_article_scores.csv",
+      "schema:description": "Processed checkpoint file containing per-article FinBERT sentiment scores. Columns: article_id, Date, Title, Sentiment_Score, Label. Stored in data/processed/ to avoid repeated GPU inference.",
+      "filePath": "data/processed/finbert_article_scores.csv",
+      "dcat:mediaType": "text/csv",
+      "prov:wasDerivedFrom": {
+        "@id": "artifact:raw-news-csv"
+      },
+      "prov:wasGeneratedBy": {
+        "@id": "activity:finbert-inference"
+      }
+    }
+  ],
+  "databaseTargets": [
+    {
+      "@id": "target:core-daily-news",
+      "@type": "prov:Entity",
+      "schema:name": "core.core_daily_news",
+      "schema:description": "SQL Server table storing sentiment-scored news articles. Each row has an article_id (PK), news_date, title, source metadata, sentiment_score, sentiment_label, and a lake_pointer_url for traceability.",
+      "prov:wasDerivedFrom": {
+        "@id": "artifact:finbert-scores-csv"
+      },
+      "prov:wasGeneratedBy": {
+        "@id": "activity:load-news-to-db"
+      }
+    },
+    {
+      "@id": "target:core-macro-monthly",
+      "@type": "prov:Entity",
+      "schema:name": "core.core_macro_indicators_monthly",
+      "schema:description": "SQL Server table storing monthly macroeconomic indicators from FRED and Eurostat. Enforces a composite alternate key (month_date, source_agency) to prevent duplicates.",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "source:fred-api"
+        },
+        {
+          "@id": "source:eurostat-api"
+        }
+      ],
+      "prov:wasGeneratedBy": {
+        "@id": "activity:load-macro-to-db"
+      }
+    },
+    {
+      "@id": "target:analytics-monthly-view",
+      "@type": "prov:Entity",
+      "schema:name": "analytics.Analytics_Monthly_View",
+      "schema:description": "Aggregated SQL view joining monthly-averaged sentiment with macroeconomic indicators, including derived MoM (Month-over-Month) changes for CPI and Industrial Production via window functions.",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "target:core-daily-news"
+        },
+        {
+          "@id": "target:core-macro-monthly"
+        }
+      ],
+      "prov:wasGeneratedBy": {
+        "@id": "activity:create-analytics-view"
+      }
+    }
+  ],
+  "activities": [
+    {
+      "@id": "activity:data-download",
+      "@type": "prov:Activity",
+      "schema:name": "Raw Data Acquisition",
+      "schema:description": "Manual download of the FinSen dataset from Kaggle and placement into data/raw/news/. This file is treated as immutable after download.",
+      "prov:used": [
+        {
+          "@id": "source:kaggle-finsen"
+        },
+        {
+          "@id": "source:huggingface-multisource"
+        }
+      ],
+      "prov:generated": {
+        "@id": "artifact:raw-news-csv"
+      },
+      "executionMethod": "Manual download"
+    },
+    {
+      "@id": "activity:finbert-inference",
+      "@type": "prov:Activity",
+      "schema:name": "FinBERT Sentiment Scoring",
+      "schema:description": "Runs the FinBERT transformer model on each article title from the raw news CSV. Produces a sentiment_score (float, -1 to +1) and a sentiment_label (positive/negative/neutral) per article. Results are checkpointed to data/processed/finbert_article_scores.csv.",
+      "prov:used": [
+        {
+          "@id": "artifact:raw-news-csv"
+        },
+        {
+          "@id": "source:finbert-model"
+        }
+      ],
+      "prov:generated": {
+        "@id": "artifact:finbert-scores-csv"
+      },
+      "executionMethod": "Python script (scripts/data_prep.ipynb)",
+      "transformationDetails": {
+        "input": "Article titles from raw CSV",
+        "model": "ProsusAI/finbert via HuggingFace transformers",
+        "scoring": "Sentiment_Score = P(positive) - P(negative) from softmax",
+        "labeling": "Label = argmax(positive, negative, neutral)"
+      }
+    },
+    {
+      "@id": "activity:fetch-fred-data",
+      "@type": "prov:Activity",
+      "schema:name": "FRED API Data Fetch",
+      "schema:description": "Fetches monthly macroeconomic series from the FRED API using the fredapi Python library. Retrieves CPI (CPIAUCSL), Unemployment Rate (UNRATE), Federal Funds Rate (FEDFUNDS), and Industrial Production (INDPRO) for 2007–2023.",
+      "prov:used": {
+        "@id": "source:fred-api"
+      },
+      "executionMethod": "Python script (scripts/data_prep.ipynb)",
+      "transformationDetails": {
+        "library": "fredapi.Fred",
+        "authentication": "API key loaded from .env file",
+        "dateRange": "2007-01-01 to 2023-12-31",
+        "seriesIds": [
+          "CPIAUCSL",
+          "UNRATE",
+          "FEDFUNDS",
+          "INDPRO"
+        ]
+      }
+    },
+    {
+      "@id": "activity:fetch-eurostat-data",
+      "@type": "prov:Activity",
+      "schema:name": "Eurostat API Data Fetch",
+      "schema:description": "Fetches European macroeconomic data from the Eurostat SDMX API. Retrieves HICP index values for Italy and Euro Area (2007–2023).",
+      "prov:used": {
+        "@id": "source:eurostat-api"
+      },
+      "executionMethod": "Python script (scripts/data_prep.ipynb)",
+      "transformationDetails": {
+        "datasetCode": "prc_hicp_midx",
+        "geographyFilter": [
+          "IT",
+          "EA"
+        ],
+        "format": "JSON"
+      }
+    },
+    {
+      "@id": "activity:load-news-to-db",
+      "@type": "prov:Activity",
+      "schema:name": "Load Scored News into Database",
+      "schema:description": "Reads finbert_article_scores.csv, maps columns to the core.core_daily_news schema (news_date, title, source_name, source_region, sentiment_score, sentiment_label, lake_pointer_url), and performs a batch INSERT via SQLAlchemy into SQL Server.",
+      "prov:used": {
+        "@id": "artifact:finbert-scores-csv"
+      },
+      "prov:generated": {
+        "@id": "target:core-daily-news"
+      },
+      "executionMethod": "Python script (scripts/data_prep.ipynb)",
+      "transformationDetails": {
+        "columnMapping": {
+          "Date": "news_date",
+          "Title": "title",
+          "Sentiment_Score": "sentiment_score",
+          "Label": "sentiment_label"
+        },
+        "enrichment": "source_name and source_region are added based on file origin; lake_pointer_url points to the raw source file",
+        "loadMethod": "Batch INSERT via SQLAlchemy with pyodbc driver"
+      }
+    },
+    {
+      "@id": "activity:load-macro-to-db",
+      "@type": "prov:Activity",
+      "schema:name": "Load Macroeconomic Indicators into Database",
+      "schema:description": "Combines FRED and Eurostat data into a unified DataFrame, aligns to the core.core_macro_indicators_monthly schema, and inserts into SQL Server. Duplicate prevention is handled by the composite unique constraint (month_date, source_agency).",
+      "prov:used": [
+        {
+          "@id": "source:fred-api"
+        },
+        {
+          "@id": "source:eurostat-api"
+        }
+      ],
+      "prov:generated": {
+        "@id": "target:core-macro-monthly"
+      },
+      "executionMethod": "Python script (scripts/data_prep.ipynb)",
+      "transformationDetails": {
+        "loadMethod": "Batch INSERT via SQLAlchemy with pyodbc driver",
+        "deduplication": "UNIQUE constraint on (month_date, source_agency)"
+      }
+    },
+    {
+      "@id": "activity:create-analytics-view",
+      "@type": "prov:Activity",
+      "schema:name": "Create Analytics Monthly View",
+      "schema:description": "Executes SQL DDL to create analytics.Analytics_Monthly_View. This view aggregates daily news sentiment to monthly averages (AVG by month and source_region), joins with macroeconomic indicators on month and region→agency mapping, and computes MoM changes using the LAG() window function.",
+      "prov:used": [
+        {
+          "@id": "target:core-daily-news"
+        },
+        {
+          "@id": "target:core-macro-monthly"
+        }
+      ],
+      "prov:generated": {
+        "@id": "target:analytics-monthly-view"
+      },
+      "executionMethod": "SQL script (scripts/03_create_analytics_view.sql)",
+      "transformationDetails": {
+        "sentimentAggregation": "AVG(sentiment_score) grouped by DATEFROMPARTS(YEAR, MONTH, 1) and source_region",
+        "regionMapping": "US → FRED, Global → Eurostat",
+        "derivedMetrics": [
+          "cpi_mom = cpi_value - LAG(cpi_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)",
+          "ind_production_mom = ind_production_value - LAG(ind_production_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)"
+        ]
+      }
+    }
+  ],
+  "lineageSummary": {
+    "description": "End-to-end data lineage from source to analytics.",
+    "pipeline": [
+      {
+        "stage": 1,
+        "name": "Acquisition",
+        "description": "Raw data is downloaded from Kaggle/HuggingFace (news) and fetched via REST APIs from FRED/Eurostat (macroeconomic indicators).",
+        "inputs": [
+          "Kaggle FinSen CSV",
+          "HuggingFace Parquet",
+          "FRED API",
+          "Eurostat SDMX API"
+        ],
+        "outputs": [
+          "data/raw/news/FinSen_US_Categorized_Timestamp.csv",
+          "In-memory DataFrames"
+        ]
+      },
+      {
+        "stage": 2,
+        "name": "Transformation (NLP)",
+        "description": "FinBERT model processes each article title to produce a sentiment score and label. Results are cached as a checkpoint CSV.",
+        "inputs": [
+          "data/raw/news/FinSen_US_Categorized_Timestamp.csv"
+        ],
+        "outputs": [
+          "data/processed/finbert_article_scores.csv"
+        ],
+        "model": "ProsusAI/finbert"
+      },
+      {
+        "stage": 3,
+        "name": "Loading (ETL)",
+        "description": "Scored articles and macroeconomic DataFrames are batch-inserted into SQL Server core tables via SQLAlchemy.",
+        "inputs": [
+          "data/processed/finbert_article_scores.csv",
+          "FRED DataFrames",
+          "Eurostat DataFrames"
+        ],
+        "outputs": [
+          "core.core_daily_news",
+          "core.core_macro_indicators_monthly"
+        ]
+      },
+      {
+        "stage": 4,
+        "name": "Analytics (View Layer)",
+        "description": "SQL view aggregates daily sentiment to monthly granularity, joins with macroeconomic indicators by region, and derives MoM changes.",
+        "inputs": [
+          "core.core_daily_news",
+          "core.core_macro_indicators_monthly"
+        ],
+        "outputs": [
+          "analytics.Analytics_Monthly_View"
+        ]
+      }
+    ]
+  }
+}
