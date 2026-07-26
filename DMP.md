@@ -2,7 +2,7 @@
 **Project:** Macroeconomic Sentiment and Inflation Database  
 **Author:** Zahra Younes Pour Langaroudi  
 **Institution:** University of Trieste — Data Science and Artificial Intelligence  
-**Date:** 2026-07-19 
+**Date:** 2026-07-19  
 **Version:** 2.0
 
 ---
