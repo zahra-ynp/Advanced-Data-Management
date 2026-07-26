@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
 This repository implements an end-to-end data engineering and analytics pipeline that integrates **macroeconomic time-series indicators** with **financial news sentiment analysis**. 
 
@@ -18,7 +18,7 @@ By processing raw financial news headlines from 2007 to 2023 using **FinBERT** (
 
 ---
 
-## 🏗️ Architecture & Data Pipeline
+## Architecture & Data Pipeline
 
 The pipeline follows a multi-tier data management architecture:
 
@@ -31,36 +31,11 @@ The pipeline follows a multi-tier data management architecture:
 
 ---
 
-## 📂 Repository Structure
-
-```text
-Advanced-Data-Management/
-├── data/
-│   ├── raw/                         ← Raw source files (never modified)
-│   │   └── news/
-│   │       └── FinSen_US_Categorized_Timestamp.csv
-│   └── processed/                   ← Derived caches & FinBERT checkpoint outputs
-│       └── finbert_article_scores.csv
-├── metadata/
-│   └── dataset_metadata.jsonld      ← JSON-LD metadata adhering to Schema.org standards
-├── scripts/
-│   ├── 01_create_schemas.sql        ← SQL: Creates 'core' and 'analytics' schemas
-│   ├── 02_build_core_tables.sql      ← SQL: Defines DDL for Core tables
-│   ├── 03_create_analytics_view.sql  ← SQL: Creates SQL View for ML feature extraction
-│   └── data_prep.ipynb               ← Jupyter Notebook: Ingestion, FinBERT NLP & Database ETL
-├── DMP.md                           ← Data Management Plan (DMP)
-└── README.md                        ← Project Documentation
-```
-
----
-
-## ⚙️ Prerequisites & Environment Setup
+##  Prerequisites & Environment Setup
 
 ### 1. Software Requirements
 - **Python:** Version 3.8 or higher
 - **Database:** Microsoft SQL Server (or SQL Server Express / LocalDB)
-- **ODBC Driver:** `ODBC Driver 17 for SQL Server` (or Driver 18)
-- **Jupyter Environment:** Jupyter Notebook or JupyterLab
 
 ### 2. External API Access
 - **FRED API Key:** Required for fetching US macroeconomic data. Obtain a free API key from [St. Louis Fed API Key Registration](https://fred.stlouisfed.org/docs/api/api_key.html).
@@ -75,7 +50,7 @@ pip install pandas numpy matplotlib sqlalchemy pyodbc fredapi transformers torch
 
 ---
 
-## 🚀 Step-by-Step Guide to Run the Code
+## Step-by-Step Guide to Run the Code
 
 ### Step 1: Database Setup
 1. Open your MS SQL Server instance (e.g., via SSMS or Azure Data Studio).
@@ -107,32 +82,13 @@ Open `scripts/data_prep.ipynb` and run the cells sequentially to fetch FRED macr
 
 ---
 
-## 📊 Analytics View Output
-
-The resulting view `analytics.Analytics_Monthly_View` provides a clean feature matrix ready for machine learning and economic modeling:
-
-| Feature Column | Type | Description |
-|---|---|---|
-| `month_date` | Date | 1st day of the month |
-| `source_agency` | String | Data provider (`FRED` / `Eurostat`) |
-| `country` | String | Geographic region (`US` / `EU`) |
-| `avg_monthly_sentiment` | Float | Aggregated FinBERT sentiment score ($-1.0$ to $+1.0$) |
-| `cpi_value` | Float | Consumer Price Index value |
-| `unemployment_rate` | Float | Unemployment Rate (%) |
-| `fed_funds_rate` | Float | Federal Funds Rate (%) |
-| `ind_production_value` | Float | Industrial Production Index |
-| `cpi_mom` | Float | Derived Month-over-Month CPI change |
-| `ind_production_mom` | Float | Derived Month-over-Month Industrial Production change |
-
----
-
-## 📄 Documentation & Metadata
+## Documentation & Metadata
 
 - **`DMP.md`**: Detailed Data Management Plan covering data collection, storage layers, copyright, preservation, and API query parameters.
 - **`metadata/dataset_metadata.jsonld`**: Structured JSON-LD metadata complying with Schema.org standards for open research data.
 
 ---
 
-## 📜 License
+## License
 
 This project and its derived datasets/views are licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license. Upstream data remains under the terms of the respective data providers (FRED, Eurostat, Kaggle, HuggingFace).
