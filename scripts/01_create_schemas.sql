@@ -1,6 +1,3 @@
-CREATE SCHEMA staging;
-GO
-
 CREATE SCHEMA core;
 GO
 
