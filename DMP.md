@@ -31,7 +31,7 @@ Data flows through four layers, from ingestion to analysis:
 
 | Layer | Contents | Format | Location |
 |---|---|---|---|
-| **Raw** | Original API responses (JSON), news CSV/Parquet files | JSON, CSV, Parquet | `data/raw/` (on disk) |
+| **Raw** | News CSV/Parquet files | CSV, Parquet | `data/raw/` (on disk) |
 | **Staging** | Macroeconomic indicators loaded from FRED and Eurostat | PostgreSQL tables | Local PostgreSQL instance |
 | **Core** | Normalized indicators and FinBERT news sentiment scores | PostgreSQL tables | Local PostgreSQL instance |
 | **Analytics** | Monthly aggregated sentiment joined with indicators; MOM inflation derived metrics | PostgreSQL views | Local PostgreSQL instance |
