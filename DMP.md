@@ -3,7 +3,7 @@
 **Author:** Zahra Younes Pour Langaroudi  
 **Institution:** University of Trieste — Data Science and Artificial Intelligence  
 **Date:** 2026-07-19  
-**Version:** 2.0
+**Version:** 2.1
 
 ---
 
@@ -32,27 +32,8 @@ Data flows through four layers, from ingestion to analysis:
 | Layer | Contents | Format | Location |
 |---|---|---|---|
 | **Raw** | News CSV/Parquet files | CSV, Parquet | `data/raw/` (on disk) |
-| **Staging** | Macroeconomic indicators loaded from FRED and Eurostat | PostgreSQL tables | Local PostgreSQL instance |
-| **Core** | Normalized indicators and FinBERT news sentiment scores | PostgreSQL tables | Local PostgreSQL instance |
-| **Analytics** | Monthly aggregated sentiment joined with indicators; MOM inflation derived metrics | PostgreSQL views | Local PostgreSQL instance |
-
-**Directory structure:**
-```
-Advanced-Data-Management/
-├── data/
-│   ├── raw/          ← original, never modified
-│   │   ├── fred/
-│   │   ├── eurostat/
-│   │   └── news/
-│   └── processed/    ← derived outputs (re-computable)
-├── metadata/
-│   └── dataset_metadata.jsonld
-├── scripts/
-├── DMP.md
-└── README.md
-```
-
-Raw files are **never overwritten**. All transformations are scripted and reproducible — staging and core tables are populated from raw files, and analytics are defined as PostgreSQL views recomputed on demand.
+| **Core** | Normalized indicators and FinBERT news sentiment scores | SQL Server tables | Local SQL Server instance |
+| **Analytics** | Monthly aggregated sentiment joined with indicators; MOM inflation derived metrics | SQL Server views | Local SQL Server instance |
 
 ---
 
@@ -70,8 +51,6 @@ All scripts, metadata, and processed outputs are available under **CC BY-NC 4.0*
 | HuggingFace Multisource News | `Brianferrell787` via HuggingFace | Open educational use (HuggingFace terms) |
 | **Derived dataset (this project)** | Zahra Younes Pour Langaroudi | CC BY-NC 4.0 |
 
-The derived analytical dataset — including sentiment scores, merged features, and SQL views — is the original intellectual contribution of this project and is licensed under **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.
-
 ---
 
 ## 4. How Will It Be Preserved?
@@ -80,12 +59,12 @@ The derived analytical dataset — including sentiment scores, merged features, 
 All datasets are described in `metadata/dataset_metadata.jsonld` — a structured JSON-LD file following the schema.org vocabulary, covering title, creator, license, temporal coverage, source URLs, format, and version. This DMP serves as the complementary human-readable documentation.
 
 **Separation of raw and derived data:**  
-Raw source files in `data/raw/` are treated as immutable. They are never modified after ingestion. All analytical outputs in `data/processed/` and PostgreSQL are fully re-computable from the raw files using the scripts in `scripts/`.
+Raw source files in `data/raw/` are treated as immutable. They are never modified after ingestion. All analytical outputs in `data/processed/` and SQL Server are fully re-computable from the raw files using the scripts in `scripts/`.
 
 **Reproducibility:**  
 - All data ingestion and transformation steps are scripted (Python/SQL).
-- PostgreSQL views (not materialized tables where possible) are used for derived metrics, ensuring they stay consistent with the underlying data without duplication.
-- API query parameters (date ranges, series IDs) are documented in `scripts/` comments and this DMP.
+- SQL Server views are used for derived metrics, ensuring they stay consistent with the underlying data without duplication.
+- API query parameters are documented in `scripts/` comments and this DMP.
 
 **Retention:**  
 Raw data and all scripts will be retained for the duration of the academic program and at least 12 months after project submission, consistent with university research data policies.
