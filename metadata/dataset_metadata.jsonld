@@ -2,7 +2,7 @@
   "@context": "https://schema.org/",
   "@type": "Dataset",
   "name": "Macroeconomic Sentiment and Inflation Database",
-  "description": "A curated dataset combining FRED and Eurostat macroeconomic indicators with financial news sentiment analysis for advanced data modeling.",
+  "description": "Macroeconomic indicators (FRED, Eurostat) combined with FinBERT-scored financial news sentiment (2007–2023), served through a role-based Streamlit dashboard backed by SQL Server.",
   "creator": {
     "@type": "Person",
     "name": "Zahra Younes Pour Langaroudi"
@@ -12,8 +12,8 @@
     "name": "University of Trieste - Data Science and Artificial Intelligence"
   },
   "dateCreated": "2026-07-18",
-  "dateModified": "2026-07-24",
-  "version": "1.0",
+  "dateModified": "2026-07-27",
+  "version": "2.0",
   "isAccessibleForFree": true,
   "license": "https://creativecommons.org/licenses/by-nc/4.0/",
   "identifier": "https://github.com/zahra-ynp/Advanced-Data-Management",
@@ -35,7 +35,8 @@
     "financial news",
     "sentiment analysis",
     "FRED",
-    "Eurostat"
+    "Eurostat",
+    "asset management"
   ],
   "variableMeasured": [
     {
@@ -57,6 +58,10 @@
     {
       "@type": "PropertyValue",
       "name": "FinBERT Sentiment Score"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Asset Market Value"
     }
   ],
   "distribution": [
