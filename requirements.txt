@@ -9,3 +9,5 @@ torch
 tqdm
 python-dotenv
 jupyter
+streamlit
+plotly
