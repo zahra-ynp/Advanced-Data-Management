@@ -2,99 +2,81 @@
 
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-[![Database](https://img.shields.io/badge/Database-MS%20SQL%20Server-red.svg)](https://www.microsoft.com/sql-server/)
+[![Database](https://img.shields.io/badge/Database-SQL%20Server-red.svg)](https://www.microsoft.com/sql-server/)
 
-**Course:** Advanced Data Management  
-**Author:** Zahra Younes Pour Langaroudi  
-**Institution:** University of Trieste — M.Sc. in Data Science and Artificial Intelligence  
+An end-to-end data project that combines macroeconomic indicators with financial-news sentiment for the period 2007-2023.
 
----
+The pipeline collects data from FRED, Eurostat, Kaggle, and Hugging Face; scores news with FinBERT; stores normalized results in Microsoft SQL Server; and presents region-aware analytics through a Streamlit dashboard.
 
-## Project Overview
+**Course:** Advanced Data Management
 
-This repository implements an end-to-end data engineering and analytics pipeline that integrates **macroeconomic time-series indicators** with **financial news sentiment analysis**. 
+**Author:** Zahra Younes Pour Langaroudi
 
-By processing raw financial news headlines from 2007 to 2023 using **FinBERT** (a financial domain-specific Transformer model) and joining them with official macroeconomic metrics from **FRED (Federal Reserve Economic Data)** and **Eurostat**, the database enables analytical research on the relationship between public economic sentiment and monetary/inflation trends.
+**Institution:** University of Trieste - M.Sc. in Data Science and Artificial Intelligence
 
----
+## Architecture
 
-## Architecture & Data Pipeline
+The repository is organized into four main areas:
 
-The pipeline follows a multi-tier data management architecture:
+- **Files:** immutable source data in `data/raw/` and reusable FinBERT results in `data/processed/`.
+- **Core database:** normalized regions, agencies, indicators, monthly observations, news, and example assets in the `core` schema.
+- **Analytics and access:** monthly analytical views in `analytics`, plus users, roles, companies, and scoped permissions in `auth`.
+- **Application:** `streamlit_app.py` provides authenticated access to regional indicators, sentiment, news content, and authorized assets.
 
-1. **Raw Layer (`data/raw/`)**: Stores original, immutable source files including macroeconomic API responses and financial news text datasets.
-2. **Processed Layer (`data/processed/`)**: Caches intermediate FinBERT sentiment checkpoint scores and aggregated article scores.
-3. **Core Database Schema (`core`)**: A normalized relational database in MS SQL Server storing:
-   - `core_macro_indicators_monthly`: Monthly time-series (CPI, Unemployment Rate, Federal Funds Rate, Industrial Production Index).
-   - `core_daily_news`: FinBERT-scored news articles (date, title, source, sentiment score, sentiment label).
-4. **Analytics Database Schema (`analytics`)**: Houses dynamic SQL views (`Analytics_Monthly_View`) that aggregate daily news sentiment to monthly levels, map regional sentiment to corresponding economic agencies, and compute Month-over-Month (MoM) economic changes.
+![Database ER diagram](docs/ER.png)
 
-### Database Schema (ER Diagram)
+## Quick Start
 
-![ER Diagram](docs/ER.png)
+### Requirements
 
----
+- Python 3.8 or later
+- Microsoft SQL Server
+- ODBC Driver 17 for SQL Server, or another driver supplied through `DB_DRIVER`
+- A FRED API key when source data must be downloaded again
 
-##  Prerequisites & Environment Setup
-
-### 1. Software Requirements
-- **Python:** Version 3.8 or higher
-- **Database:** Microsoft SQL Server (or SQL Server Express / LocalDB)
-
-### 2. External API Access
-- **FRED API Key:** Required for fetching US macroeconomic data. Obtain a free API key from [St. Louis Fed API Key Registration](https://fred.stlouisfed.org/docs/api/api_key.html).
-
-### 3. Python Package Dependencies
-
-Install the required Python packages using `pip`:
+Install the Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+Create a SQL Server database named `MacroSentimentDB`, then run the SQL files in this order:
 
-## Step-by-Step Guide to Run the Code
+```text
+scripts/01_create_schemas.sql
+scripts/02a_create_source_regions.sql
+scripts/02b_build_core_tables.sql
+scripts/03_create_analytics_view.sql
+scripts/03b_create_monthly_region_wide_view.sql
+scripts/04_create_auth_tables.sql
+scripts/05_create_access_views.sql
+scripts/06_create_assets_table.sql
+```
 
-### Step 1: Database Setup
-1. Open your MS SQL Server instance (e.g., via SSMS or Azure Data Studio).
-2. Create a target database named `MacroSentimentDB`:
-   ```sql
-   CREATE DATABASE MacroSentimentDB;
-   ```
-3. Execute the SQL scripts in the `scripts/` directory in order:
-   - **`01_create_schemas.sql`**: Initializes `core` and `analytics` schemas.
-   - **`02_build_core_tables.sql`**: Constructs `core.core_daily_news` and `core.core_macro_indicators_monthly`.
-   - **`03_create_analytics_view.sql`**: Builds the analytical feature view `analytics.Analytics_Monthly_View`.
+Open `scripts/data_prep.ipynb`, provide the required FRED key and database connection, and run the notebook from top to bottom. A precomputed FinBERT checkpoint is included at `data/processed/finbert_article_scores.csv`.
 
-### Step 2: Configure Environment Credentials
-1. Open `scripts/data_prep.ipynb`.
-2. Update the FRED API Key configuration cell:
-   ```python
-   FRED_API_KEY = "YOUR_FREE_FRED_API_KEY"
-   ```
-3. Verify your SQL Server connection parameters:
-   ```python
-   SERVER   = r'localhost'         # Or your SQL Server instance name
-   DATABASE = 'MacroSentimentDB'
-   ```
+Configure the dashboard connection if the defaults do not match your environment:
 
-### Step 3: Run the Data Pipeline Notebook
-Open `scripts/data_prep.ipynb` and run the cells sequentially to fetch FRED macroeconomic series, populate the database tables, and compute analytics.
+```text
+DB_SERVER=your-server
+DB_DATABASE=MacroSentimentDB
+DB_DRIVER=ODBC Driver 17 for SQL Server
+```
 
-> **Note on FinBERT Sentiment Analysis:** The pre-computed sentiment output (`finbert_article_scores.csv`) is already provided in `data/processed/`. The notebook skips heavy FinBERT inference by default (as commented in the code) and directly loads the ready-scored dataset into the database (`core.core_daily_news`).
+Start the application:
 
----
+```bash
+streamlit run streamlit_app.py
+```
 
-## Documentation & Metadata
 
-- **`DMP.md`**: Detailed Data Management Plan covering data collection, storage layers, copyright, preservation, and API query parameters.
-- **`metadata/dataset_metadata.jsonld`**: Structured JSON-LD metadata complying with Schema.org standards for open research data.
-- **`metadata/data_dictionary.json`**: Comprehensive data dictionary documenting every database table, view, and file dataset with column-level definitions, data types, constraints, value domains, and business meaning.
-- **`metadata/data_lineage.jsonld`**: Provenance and lineage metadata using W3C PROV-O ontology, documenting the complete data flow from external sources through transformation stages to the final analytics layer.
+## Documentation
 
----
+- [`DMP.md`](DMP.md): scope, architecture, tables, governance, security, preservation, and reproducibility.
+- [`metadata/data_dictionary.json`](metadata/data_dictionary.json): field-level metadata.
+- [`metadata/data_lineage.jsonld`](metadata/data_lineage.jsonld): source and transformation lineage.
+- [`metadata/dataset_metadata.jsonld`](metadata/dataset_metadata.jsonld): descriptive dataset metadata.
 
 ## License
 
-This project and its derived datasets/views are licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license. Upstream data remains under the terms of the respective data providers (FRED, Eurostat, Kaggle, HuggingFace).
+Project code, metadata, and eligible derived outputs are licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). Upstream data remains subject to the terms of FRED, Eurostat, Kaggle, Hugging Face, and the original data providers.
