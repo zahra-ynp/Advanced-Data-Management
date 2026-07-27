@@ -2,14 +2,12 @@
   "@context": {
     "schema": "https://schema.org/",
     "prov": "http://www.w3.org/ns/prov#",
-    "dcat": "http://www.w3.org/ns/dcat#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#"
+    "dcat": "http://www.w3.org/ns/dcat#"
   },
   "@type": "prov:Bundle",
   "schema:name": "Macroeconomic Sentiment and Inflation Database — Data Lineage",
-  "schema:description": "Provenance and lineage metadata documenting the complete data flow from external sources through transformation stages to the final analytical views in the MacroSentimentDB database.",
-  "schema:version": "1.0",
-  "schema:dateCreated": "2026-07-26",
+  "schema:version": "2.0",
+  "schema:dateCreated": "2026-07-28",
   "schema:creator": {
     "@type": "schema:Person",
     "schema:name": "Zahra Younes Pour Langaroudi"
@@ -18,56 +16,36 @@
     {
       "@id": "source:kaggle-finsen",
       "@type": "prov:Entity",
-      "schema:name": "Kaggle FinSen Financial Sentiment Dataset",
-      "schema:description": "Raw CSV dataset of US financial news headlines with timestamps and topic tags (2007–2023).",
+      "schema:name": "Kaggle FinSen Dataset",
       "schema:url": "https://www.kaggle.com/datasets/eaglewhl/finsen-financial-sentiment-dataset",
-      "dcat:mediaType": "text/csv",
-      "schema:license": "Kaggle Open Dataset Terms",
-      "schema:temporalCoverage": "2007-01-01/2023-12-31",
-      "schema:spatialCoverage": "United States",
-      "prov:wasAttributedTo": "Kaggle user: eaglewhl"
+      "dcat:mediaType": "text/csv"
     },
     {
       "@id": "source:huggingface-multisource",
       "@type": "prov:Entity",
       "schema:name": "HuggingFace Financial News Multisource",
-      "schema:description": "Large multi-source financial news corpus in Apache Parquet format.",
       "schema:url": "https://huggingface.co/datasets/Brianferrell787/financial-news-multisource",
-      "dcat:mediaType": "application/vnd.apache.parquet",
-      "schema:license": "HuggingFace Dataset Terms",
-      "prov:wasAttributedTo": "HuggingFace user: Brianferrell787"
+      "dcat:mediaType": "application/vnd.apache.parquet"
     },
     {
       "@id": "source:fred-api",
       "@type": "prov:Entity",
-      "schema:name": "FRED (Federal Reserve Economic Data) API",
-      "schema:description": "REST API providing US macroeconomic time-series: CPI (CPIAUCSL), Unemployment Rate (UNRATE), Federal Funds Rate (FEDFUNDS), Industrial Production Index (INDPRO).",
+      "schema:name": "FRED API",
       "schema:url": "https://api.stlouisfed.org/fred/series/observations",
-      "dcat:mediaType": "application/json",
-      "schema:license": "Public Domain (U.S. Government)",
-      "schema:temporalCoverage": "2007-01-01/2023-12-31",
-      "schema:spatialCoverage": "United States",
-      "prov:wasAttributedTo": "Federal Reserve Bank of St. Louis"
+      "dcat:mediaType": "application/json"
     },
     {
       "@id": "source:eurostat-api",
       "@type": "prov:Entity",
       "schema:name": "Eurostat SDMX API",
-      "schema:description": "SDMX-compliant API providing European macroeconomic indicators including HICP (Harmonised Index of Consumer Prices, dataset prc_hicp_midx).",
       "schema:url": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/",
-      "dcat:mediaType": "application/json",
-      "schema:license": "CC BY 4.0",
-      "schema:temporalCoverage": "2007-01-01/2023-12-31",
-      "schema:spatialCoverage": "European Union (Euro Area)",
-      "prov:wasAttributedTo": "European Commission — Eurostat"
+      "dcat:mediaType": "application/json"
     },
     {
       "@id": "source:finbert-model",
       "@type": "prov:SoftwareAgent",
-      "schema:name": "FinBERT Sentiment Analysis Model",
-      "schema:description": "Pre-trained Transformer model fine-tuned for financial text sentiment classification (positive, negative, neutral). Used from the HuggingFace transformers library.",
-      "schema:url": "https://huggingface.co/ProsusAI/finbert",
-      "schema:softwareVersion": "HuggingFace Transformers"
+      "schema:name": "FinBERT (ProsusAI/finbert)",
+      "schema:url": "https://huggingface.co/ProsusAI/finbert"
     }
   ],
   "intermediateArtifacts": [
@@ -75,23 +53,16 @@
       "@id": "artifact:raw-news-csv",
       "@type": "prov:Entity",
       "schema:name": "FinSen_US_Categorized_Timestamp.csv",
-      "schema:description": "Immutable raw news file stored in data/raw/news/. Contains article_id, Title, Tag, Time, and Content columns.",
       "filePath": "data/raw/news/FinSen_US_Categorized_Timestamp.csv",
-      "dcat:mediaType": "text/csv",
       "prov:wasDerivedFrom": {
         "@id": "source:kaggle-finsen"
-      },
-      "prov:wasGeneratedBy": {
-        "@id": "activity:data-download"
       }
     },
     {
       "@id": "artifact:finbert-scores-csv",
       "@type": "prov:Entity",
       "schema:name": "finbert_article_scores.csv",
-      "schema:description": "Processed checkpoint file containing per-article FinBERT sentiment scores. Columns: article_id, Date, Title, Sentiment_Score, Label. Stored in data/processed/ to avoid repeated GPU inference.",
       "filePath": "data/processed/finbert_article_scores.csv",
-      "dcat:mediaType": "text/csv",
       "prov:wasDerivedFrom": {
         "@id": "artifact:raw-news-csv"
       },
@@ -102,49 +73,165 @@
   ],
   "databaseTargets": [
     {
-      "@id": "target:core-daily-news",
+      "@id": "target:source-regions",
       "@type": "prov:Entity",
-      "schema:name": "core.core_daily_news",
-      "schema:description": "SQL Server table storing sentiment-scored news articles. Each row has an article_id (PK), news_date, title, source metadata, sentiment_score, sentiment_label, and a lake_pointer_url for traceability.",
-      "prov:wasDerivedFrom": {
-        "@id": "artifact:finbert-scores-csv"
-      },
+      "schema:name": "core.source_regions",
       "prov:wasGeneratedBy": {
-        "@id": "activity:load-news-to-db"
+        "@id": "activity:create-schema"
       }
     },
     {
-      "@id": "target:core-macro-monthly",
+      "@id": "target:source-agencies",
       "@type": "prov:Entity",
-      "schema:name": "core.core_macro_indicators_monthly",
-      "schema:description": "SQL Server table storing monthly macroeconomic indicators from FRED and Eurostat. Enforces a composite alternate key (month_date, source_agency) to prevent duplicates.",
+      "schema:name": "core.source_agencies",
+      "prov:wasDerivedFrom": {
+        "@id": "target:source-regions"
+      }
+    },
+    {
+      "@id": "target:indicators",
+      "@type": "prov:Entity",
+      "schema:name": "core.indicators",
+      "prov:wasGeneratedBy": {
+        "@id": "activity:create-schema"
+      }
+    },
+    {
+      "@id": "target:daily-news",
+      "@type": "prov:Entity",
+      "schema:name": "core.daily_news",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "artifact:finbert-scores-csv"
+        },
+        {
+          "@id": "target:source-regions"
+        }
+      ]
+    },
+    {
+      "@id": "target:monthly-macro",
+      "@type": "prov:Entity",
+      "schema:name": "core.monthly_macro_indicators",
       "prov:wasDerivedFrom": [
         {
           "@id": "source:fred-api"
         },
         {
           "@id": "source:eurostat-api"
+        },
+        {
+          "@id": "target:source-agencies"
+        },
+        {
+          "@id": "target:indicators"
         }
-      ],
+      ]
+    },
+    {
+      "@id": "target:assets",
+      "@type": "prov:Entity",
+      "schema:name": "core.assets",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "target:source-regions"
+        },
+        {
+          "@id": "target:auth-companies"
+        }
+      ]
+    },
+    {
+      "@id": "target:auth-roles",
+      "@type": "prov:Entity",
+      "schema:name": "auth.roles",
       "prov:wasGeneratedBy": {
-        "@id": "activity:load-macro-to-db"
+        "@id": "activity:create-auth"
       }
+    },
+    {
+      "@id": "target:auth-users",
+      "@type": "prov:Entity",
+      "schema:name": "auth.users",
+      "prov:wasGeneratedBy": {
+        "@id": "activity:create-auth"
+      }
+    },
+    {
+      "@id": "target:auth-companies",
+      "@type": "prov:Entity",
+      "schema:name": "auth.companies",
+      "prov:wasGeneratedBy": {
+        "@id": "activity:create-auth"
+      }
+    },
+    {
+      "@id": "target:auth-user-access",
+      "@type": "prov:Entity",
+      "schema:name": "auth.user_access",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "target:auth-users"
+        },
+        {
+          "@id": "target:auth-roles"
+        },
+        {
+          "@id": "target:auth-companies"
+        },
+        {
+          "@id": "target:source-regions"
+        }
+      ]
     },
     {
       "@id": "target:analytics-monthly-view",
       "@type": "prov:Entity",
-      "schema:name": "analytics.Analytics_Monthly_View",
-      "schema:description": "Aggregated SQL view joining monthly-averaged sentiment with macroeconomic indicators, including derived MoM (Month-over-Month) changes for CPI and Industrial Production via window functions.",
+      "schema:name": "analytics.Monthly_View",
       "prov:wasDerivedFrom": [
         {
-          "@id": "target:core-daily-news"
+          "@id": "target:daily-news"
         },
         {
-          "@id": "target:core-macro-monthly"
+          "@id": "target:monthly-macro"
         }
-      ],
-      "prov:wasGeneratedBy": {
-        "@id": "activity:create-analytics-view"
+      ]
+    },
+    {
+      "@id": "target:analytics-region-wide-view",
+      "@type": "prov:Entity",
+      "schema:name": "analytics.Monthly_Region_Wide_View",
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "target:daily-news"
+        },
+        {
+          "@id": "target:monthly-macro"
+        }
+      ]
+    },
+    {
+      "@id": "target:auth-vw-user-permissions",
+      "@type": "prov:Entity",
+      "schema:name": "auth.vw_user_permissions",
+      "prov:wasDerivedFrom": {
+        "@id": "target:auth-user-access"
+      }
+    },
+    {
+      "@id": "target:auth-vw-user-access-summary",
+      "@type": "prov:Entity",
+      "schema:name": "auth.vw_user_access_summary",
+      "prov:wasDerivedFrom": {
+        "@id": "target:auth-user-access"
+      }
+    },
+    {
+      "@id": "target:auth-vw-user-login",
+      "@type": "prov:Entity",
+      "schema:name": "auth.vw_user_login",
+      "prov:wasDerivedFrom": {
+        "@id": "target:auth-users"
       }
     }
   ],
@@ -153,7 +240,6 @@
       "@id": "activity:data-download",
       "@type": "prov:Activity",
       "schema:name": "Raw Data Acquisition",
-      "schema:description": "Manual download of the FinSen dataset from Kaggle and placement into data/raw/news/. This file is treated as immutable after download.",
       "prov:used": [
         {
           "@id": "source:kaggle-finsen"
@@ -171,7 +257,6 @@
       "@id": "activity:finbert-inference",
       "@type": "prov:Activity",
       "schema:name": "FinBERT Sentiment Scoring",
-      "schema:description": "Runs the FinBERT transformer model on each article title from the raw news CSV. Produces a sentiment_score (float, -1 to +1) and a sentiment_label (positive/negative/neutral) per article. Results are checkpointed to data/processed/finbert_article_scores.csv.",
       "prov:used": [
         {
           "@id": "artifact:raw-news-csv"
@@ -183,81 +268,41 @@
       "prov:generated": {
         "@id": "artifact:finbert-scores-csv"
       },
-      "executionMethod": "Python script (scripts/data_prep.ipynb)",
-      "transformationDetails": {
-        "input": "Article titles from raw CSV",
-        "model": "ProsusAI/finbert via HuggingFace transformers",
-        "scoring": "Sentiment_Score = P(positive) - P(negative) from softmax",
-        "labeling": "Label = argmax(positive, negative, neutral)"
-      }
+      "executionMethod": "scripts/data_prep.ipynb"
     },
     {
-      "@id": "activity:fetch-fred-data",
+      "@id": "activity:create-schema",
       "@type": "prov:Activity",
-      "schema:name": "FRED API Data Fetch",
-      "schema:description": "Fetches monthly macroeconomic series from the FRED API using the fredapi Python library. Retrieves CPI (CPIAUCSL), Unemployment Rate (UNRATE), Federal Funds Rate (FEDFUNDS), and Industrial Production (INDPRO) for 2007–2023.",
-      "prov:used": {
-        "@id": "source:fred-api"
-      },
-      "executionMethod": "Python script (scripts/data_prep.ipynb)",
-      "transformationDetails": {
-        "library": "fredapi.Fred",
-        "authentication": "API key loaded from .env file",
-        "dateRange": "2007-01-01 to 2023-12-31",
-        "seriesIds": [
-          "CPIAUCSL",
-          "UNRATE",
-          "FEDFUNDS",
-          "INDPRO"
-        ]
-      }
-    },
-    {
-      "@id": "activity:fetch-eurostat-data",
-      "@type": "prov:Activity",
-      "schema:name": "Eurostat API Data Fetch",
-      "schema:description": "Fetches European macroeconomic data from the Eurostat SDMX API. Retrieves HICP index values for Italy and Euro Area (2007–2023).",
-      "prov:used": {
-        "@id": "source:eurostat-api"
-      },
-      "executionMethod": "Python script (scripts/data_prep.ipynb)",
-      "transformationDetails": {
-        "datasetCode": "prc_hicp_midx",
-        "geographyFilter": [
-          "IT",
-          "EA"
-        ],
-        "format": "JSON"
-      }
+      "schema:name": "Create Schemas and Reference Tables",
+      "prov:generated": [
+        {
+          "@id": "target:source-regions"
+        },
+        {
+          "@id": "target:source-agencies"
+        },
+        {
+          "@id": "target:indicators"
+        }
+      ],
+      "executionMethod": "scripts/01_create_schemas.sql → 02a → 02b"
     },
     {
       "@id": "activity:load-news-to-db",
       "@type": "prov:Activity",
-      "schema:name": "Load Scored News into Database",
-      "schema:description": "Reads finbert_article_scores.csv, maps columns to the core.core_daily_news schema (news_date, title, source_name, source_region, sentiment_score, sentiment_label, lake_pointer_url), and performs a batch INSERT via SQLAlchemy into SQL Server.",
+      "schema:name": "Load News into Database",
       "prov:used": {
         "@id": "artifact:finbert-scores-csv"
       },
       "prov:generated": {
-        "@id": "target:core-daily-news"
+        "@id": "target:daily-news"
       },
-      "executionMethod": "Python script (scripts/data_prep.ipynb)",
-      "transformationDetails": {
-        "columnMapping": {
-          "Date": "news_date",
-          "Title": "title",
-          "Sentiment_Score": "sentiment_score",
-          "Label": "sentiment_label"
-        },
-        "enrichment": "source_name and source_region are added based on file origin; lake_pointer_url points to the raw source file",
-        "loadMethod": "Batch INSERT via SQLAlchemy with pyodbc driver"
-      }
+      "executionMethod": "scripts/data_prep.ipynb"
     },
     {
       "@id": "activity:load-macro-to-db",
       "@type": "prov:Activity",
-      "schema:name": "Load Macroeconomic Indicators into Database",
-      "schema:description": "Combines FRED and Eurostat data into a unified DataFrame, aligns to the core.core_macro_indicators_monthly schema, and inserts into SQL Server. Duplicate prevention is handled by the composite unique constraint (month_date, source_agency).",
+      "schema:name": "Load Macro Indicators into Database",
       "prov:used": [
         {
           "@id": "source:fred-api"
@@ -267,48 +312,75 @@
         }
       ],
       "prov:generated": {
-        "@id": "target:core-macro-monthly"
+        "@id": "target:monthly-macro"
       },
-      "executionMethod": "Python script (scripts/data_prep.ipynb)",
-      "transformationDetails": {
-        "loadMethod": "Batch INSERT via SQLAlchemy with pyodbc driver",
-        "deduplication": "UNIQUE constraint on (month_date, source_agency)"
-      }
+      "executionMethod": "scripts/data_prep.ipynb"
     },
     {
-      "@id": "activity:create-analytics-view",
+      "@id": "activity:create-analytics-views",
       "@type": "prov:Activity",
-      "schema:name": "Create Analytics Monthly View",
-      "schema:description": "Executes SQL DDL to create analytics.Analytics_Monthly_View. This view aggregates daily news sentiment to monthly averages (AVG by month and source_region), joins with macroeconomic indicators on month and region→agency mapping, and computes MoM changes using the LAG() window function.",
+      "schema:name": "Create Analytics Views",
       "prov:used": [
         {
-          "@id": "target:core-daily-news"
+          "@id": "target:daily-news"
         },
         {
-          "@id": "target:core-macro-monthly"
+          "@id": "target:monthly-macro"
+        }
+      ],
+      "prov:generated": [
+        {
+          "@id": "target:analytics-monthly-view"
+        },
+        {
+          "@id": "target:analytics-region-wide-view"
+        }
+      ],
+      "executionMethod": "scripts/03_create_analytics_view.sql, 03b_create_monthly_region_wide_view.sql"
+    },
+    {
+      "@id": "activity:create-auth",
+      "@type": "prov:Activity",
+      "schema:name": "Create Auth Layer",
+      "prov:generated": [
+        {
+          "@id": "target:auth-roles"
+        },
+        {
+          "@id": "target:auth-users"
+        },
+        {
+          "@id": "target:auth-companies"
+        },
+        {
+          "@id": "target:auth-user-access"
+        }
+      ],
+      "executionMethod": "scripts/04_create_auth_tables.sql, 05_create_access_views.sql"
+    },
+    {
+      "@id": "activity:create-assets",
+      "@type": "prov:Activity",
+      "schema:name": "Create Assets Table",
+      "prov:used": [
+        {
+          "@id": "target:source-regions"
+        },
+        {
+          "@id": "target:auth-companies"
         }
       ],
       "prov:generated": {
-        "@id": "target:analytics-monthly-view"
+        "@id": "target:assets"
       },
-      "executionMethod": "SQL script (scripts/03_create_analytics_view.sql)",
-      "transformationDetails": {
-        "sentimentAggregation": "AVG(sentiment_score) grouped by DATEFROMPARTS(YEAR, MONTH, 1) and source_region",
-        "regionMapping": "US → FRED, Global → Eurostat",
-        "derivedMetrics": [
-          "cpi_mom = cpi_value - LAG(cpi_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)",
-          "ind_production_mom = ind_production_value - LAG(ind_production_value, 1) OVER (PARTITION BY source_agency ORDER BY month_date)"
-        ]
-      }
+      "executionMethod": "scripts/06_create_assets_table.sql"
     }
   ],
   "lineageSummary": {
-    "description": "End-to-end data lineage from source to analytics.",
     "pipeline": [
       {
         "stage": 1,
         "name": "Acquisition",
-        "description": "Raw data is downloaded from Kaggle/HuggingFace (news) and fetched via REST APIs from FRED/Eurostat (macroeconomic indicators).",
         "inputs": [
           "Kaggle FinSen CSV",
           "HuggingFace Parquet",
@@ -322,40 +394,76 @@
       },
       {
         "stage": 2,
-        "name": "Transformation (NLP)",
-        "description": "FinBERT model processes each article title to produce a sentiment score and label. Results are cached as a checkpoint CSV.",
+        "name": "NLP Transformation",
         "inputs": [
-          "data/raw/news/FinSen_US_Categorized_Timestamp.csv"
+          "Raw news CSV",
+          "FinBERT model"
         ],
         "outputs": [
           "data/processed/finbert_article_scores.csv"
-        ],
-        "model": "ProsusAI/finbert"
+        ]
       },
       {
         "stage": 3,
-        "name": "Loading (ETL)",
-        "description": "Scored articles and macroeconomic DataFrames are batch-inserted into SQL Server core tables via SQLAlchemy.",
+        "name": "Schema & Reference Data",
         "inputs": [
-          "data/processed/finbert_article_scores.csv",
-          "FRED DataFrames",
-          "Eurostat DataFrames"
+          "SQL DDL scripts"
         ],
         "outputs": [
-          "core.core_daily_news",
-          "core.core_macro_indicators_monthly"
+          "core.source_regions",
+          "core.source_agencies",
+          "core.indicators"
         ]
       },
       {
         "stage": 4,
-        "name": "Analytics (View Layer)",
-        "description": "SQL view aggregates daily sentiment to monthly granularity, joins with macroeconomic indicators by region, and derives MoM changes.",
+        "name": "ETL Loading",
         "inputs": [
-          "core.core_daily_news",
-          "core.core_macro_indicators_monthly"
+          "finbert_article_scores.csv",
+          "FRED DataFrames",
+          "Eurostat DataFrames"
         ],
         "outputs": [
-          "analytics.Analytics_Monthly_View"
+          "core.daily_news",
+          "core.monthly_macro_indicators"
+        ]
+      },
+      {
+        "stage": 5,
+        "name": "Analytics Views",
+        "inputs": [
+          "core.daily_news",
+          "core.monthly_macro_indicators"
+        ],
+        "outputs": [
+          "analytics.Monthly_View",
+          "analytics.Monthly_Region_Wide_View"
+        ]
+      },
+      {
+        "stage": 6,
+        "name": "Auth & Access Control",
+        "inputs": [
+          "SQL DDL scripts"
+        ],
+        "outputs": [
+          "auth.roles",
+          "auth.users",
+          "auth.companies",
+          "auth.user_access",
+          "auth views"
+        ]
+      },
+      {
+        "stage": 7,
+        "name": "Assets",
+        "inputs": [
+          "core.source_regions",
+          "auth.companies",
+          "SQL DDL scripts"
+        ],
+        "outputs": [
+          "core.assets"
         ]
       }
     ]
